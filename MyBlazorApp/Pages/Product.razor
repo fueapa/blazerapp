@@ -1,0 +1,103 @@
+﻿@page "/products"
+@using MyBlazorApp.Models
+@using MyBlazorApp.Services
+@inject ProductService ProductService
+
+<h3>Products</h3>
+
+@if (products == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in products)
+            {
+                <tr>
+                    <td>@product.Id</td>
+                    <td>@product.Name</td>
+                    <td>@product.Price</td>
+                    <td>
+                        <button @onclick="() => EditProduct(product)">Edit</button>
+                        <button @onclick="() => DeleteProduct(product.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4>@(editProduct == null ? "Add" : "Edit") Product</h4>
+    <EditForm Model="currentProduct" OnValidSubmit="SaveProduct">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div>
+            <label>Name:</label>
+            <InputText @bind-Value="currentProduct.Name" />
+        </div>
+        <div>
+            <label>Price:</label>
+            <InputNumber @bind-Value="currentProduct.Price" />
+        </div>
+        <button type="submit">Save</button>
+        @if (editProduct != null)
+        {
+            <button @onclick="CancelEdit">Cancel</button>
+        }
+    </EditForm>
+}
+
+@code {
+    private List<MyBlazorApp.Models.Product> products;
+    private MyBlazorApp.Models.Product currentProduct = new();
+    private MyBlazorApp.Models.Product editProduct;
+
+    protected override async Task OnInitializedAsync()
+    {
+        products = await ProductService.GetAllAsync();
+    }
+
+    private void EditProduct(MyBlazorApp.Models.Product product)
+    {
+        editProduct = product;
+        currentProduct = new MyBlazorApp.Models.Product { Id = product.Id, Name = product.Name, Price = product.Price };
+    }
+
+    private async Task SaveProduct()
+    {
+        if (editProduct == null)
+        {
+            var newProduct = await ProductService.CreateAsync(currentProduct);
+            products.Add(newProduct);
+        }
+        else
+        {
+            await ProductService.UpdateAsync(currentProduct);
+            editProduct.Name = currentProduct.Name;
+            editProduct.Price = currentProduct.Price;
+            editProduct = null;
+        }
+        currentProduct = new MyBlazorApp.Models.Product();
+    }
+
+    private void CancelEdit()
+    {
+        editProduct = null;
+        currentProduct = new MyBlazorApp.Models.Product();
+    }
+
+    private async Task DeleteProduct(int id)
+    {
+        await ProductService.DeleteAsync(id);
+        products.RemoveAll(p => p.Id == id);
+    }
+}

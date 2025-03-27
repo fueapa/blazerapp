@@ -1,0 +1,28 @@
+# Build output folders
+bin/
+obj/
+
+# Visual Studio user-specific files
+.vs/
+*.suo
+*.user
+*.sln.docstates
+
+# Logs
+*.log
+
+# Configuración de usuario de Visual Studio
+*.csproj.user
+*.slnLaunch.json
+
+# Dependencias y paquetes
+node_modules/
+packages/
+
+# Archivos de depuración y caché
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+
+# Archivos específicos de Blazor
+wwwroot/*.cache
